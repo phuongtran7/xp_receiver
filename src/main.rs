@@ -24,9 +24,13 @@ impl Server {
             // The first 5 bytes are 4 bytes DATA string with 1 byte blank
             let header = str::from_utf8(&buf[..4]).unwrap();
             println!("Header: {}", header);
+
+            if header != "DATA" {
+                continue;
+            }
             
             // Then each of the next 36 bytes are data
-            //with the first 4 bytes is the column index
+            // with the first 4 bytes is the column index
             for current_index in (5..byte_recv).step_by(36) {
                 let index = LittleEndian::read_u32(&buf[current_index..(current_index + 4)]);
                 println!("Index: {}", index);
@@ -63,7 +67,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // This starts the server task.
     server.run().await?;
-
 
     Ok(())
 }
