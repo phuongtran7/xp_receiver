@@ -1,1 +1,1 @@
-Simpule X-Plane UDP data receiver
+Simple X-Plane UDP data receiver
