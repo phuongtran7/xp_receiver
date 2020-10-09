@@ -9,6 +9,7 @@ struct Server {
 }
 
 impl Server {
+
     async fn run(self) -> Result<(), io::Error> {
         let Server {
             mut socket,
@@ -23,23 +24,28 @@ impl Server {
             // The first 5 bytes are 4 bytes DATA string with 1 byte blank
             let header = str::from_utf8(&buf[..4]).unwrap();
             println!("Header: {}", header);
-            // Then the next 36 bytes are data, with the first 4 bytes is the column index
-            let index = LittleEndian::read_u32(&buf[5..9]);
-            println!("Index: {}", index);
-
-            // The next 32 bytes are the values, make up to 8 float in totals. 4 bytes each
-            let mut vec: Vec<f32> = Vec::new();
-
-            for x in 0..8 {
-                let start_index = (x*4) + 9;
-                let end_index = start_index + 4;
-                let temp = LittleEndian::read_f32(&buf[start_index..end_index]);
-                vec.push(temp);
+            
+            // Then each of the next 36 bytes are data
+            //with the first 4 bytes is the column index
+            for current_index in (5..byte_recv).step_by(36) {
+                let index = LittleEndian::read_u32(&buf[current_index..(current_index + 4)]);
+                println!("Index: {}", index);
+    
+                // The next 32 bytes are the values, make up to 8 float in totals. 4 bytes each
+                let mut vec: Vec<f32> = Vec::new();
+    
+                for x in 0..8 {
+                    let start_index = (x*4) + current_index;
+                    let end_index = start_index + 4;
+                    let temp = LittleEndian::read_f32(&buf[start_index..end_index]);
+                    vec.push(temp);
+                }
+    
+                for val in vec{
+                    println!("Value: {}", val);
+                }
             }
-
-            for val in vec{
-                println!("Value: {}", val);
-            }
+            println!("------------------");
         }
     }
 }
